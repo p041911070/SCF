@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
@@ -13,34 +13,44 @@
   </Target>
 
   <ItemGroup>
-    <Compile Remove="Cache\BaseCache\CacheStrategyFactory.cs" />
-    <Compile Remove="Cache\BaseCache\LocalCacheStrategy.cs" />
-    <Compile Remove="Cache\BaseCache\MemcachedStrategy.cs" />
-    <Compile Remove="Cache\BaseCache\RedisStrategy.cs" />
-    <Compile Remove="Cache\Interface\IBaseCacheStrategy.cs" />
-    <Compile Remove="Models\DataBaseModel\Mapping\AccountTypeConfigurationMapping.cs" />
+    <Compile Remove="Cache\RedisProvider\IRedisProvider.cs" />
+    <Compile Remove="Cache\RedisProvider\StackExchangeRedisProvider.cs" />
+    <Compile Remove="SenparcEntitiesModelSnapshot.cs" />
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.CookiePolicy" Version="2.2.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />   
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Senparc.Weixin" Version="6.3.4.2" />
-    <PackageReference Include="Senparc.Weixin.Cache.Memcached" Version="2.3.2.1" />
-    <PackageReference Include="Senparc.Weixin.Cache.Redis" Version="2.5.0.1" />
-    <PackageReference Include="Senparc.Weixin.MP" Version="16.6.7" />
+
+    <PackageReference Include="Senparc.Scf.XscfBase" Version="0.3.300-beta1" />
+    <PackageReference Include="Senparc.Scf.Utility" Version="0.3.300-beta1" />
+    <PackageReference Include="Senparc.Weixin" Version="6.7.401" />
+    <PackageReference Include="Senparc.Weixin.Cache.CsRedis" Version="0.1.401" />
+    <PackageReference Include="Senparc.Weixin.Cache.Memcached" Version="2.6.401" />
+    <PackageReference Include="Senparc.Weixin.MP" Version="16.10.401" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Senparc.Log\Senparc.Log.csproj" />
+    <PackageReference Include="Senparc.Scf.Core" Version="0.3.300-beta1" />
     <ProjectReference Include="..\Senparc.Utility\Senparc.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.0-preview1-final" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Cache\RedisProvider\" />
   </ItemGroup>
 
 

@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Senparc.Core\Senparc.Core.csproj" />
+    <PackageReference Include="Senparc.Scf.Log" Version="0.3.300-beta1" />
+    <PackageReference Include="Senparc.Scf.SMS" Version="0.3.300-beta1" />
   </ItemGroup>
 
 </Project>

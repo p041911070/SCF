@@ -10,21 +10,23 @@ using Senparc.CO2NET;
 using Senparc.CO2NET.Extensions;
 using Senparc.CO2NET.HttpUtility;
 using Senparc.Core.Cache;
-using Senparc.Core.Config;
-using Senparc.Core.Enums;
-using Senparc.Core.Extensions;
 using Senparc.Core.Models;
-using Senparc.Core.Utility;
-using Senparc.Log;
 using Senparc.Repository;
-using Senparc.Service.OperationQueue;
-using Senparc.Utility;
+using Senparc.Scf.Core.Config;
+using Senparc.Scf.Core.Extensions;
+using Senparc.Scf.Core.Utility;
+using Senparc.Scf.Log;
 using Senparc.Weixin.MP.AdvancedAPIs.OAuth;
 using Senparc.Weixin.MP.AdvancedAPIs.User;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Claims;
+using Senparc.Scf.Service;
+using Senparc.Service.OperationQueue;
+using Microsoft.Extensions.DependencyInjection;
+using Senparc.Scf.Core.Models;
+using Senparc.Scf.Core.Cache;
 
 namespace Senparc.Service
 {
@@ -33,8 +35,8 @@ namespace Senparc.Service
         private readonly Lazy<IHttpContextAccessor> _httpContextAccessor;
         private string GetSalt => DateTime.Now.Ticks.ToString();
 
-        public AccountService(AccountRepository accountRepo, Lazy<IHttpContextAccessor> httpContextAccessor)
-            : base(accountRepo)
+        public AccountService(AccountRepository accountRepo, Lazy<IHttpContextAccessor> httpContextAccessor, IServiceProvider serviceProvider)
+            : base(accountRepo, serviceProvider)
         {
             _httpContextAccessor = httpContextAccessor;
         }
@@ -47,11 +49,11 @@ namespace Senparc.Service
         /// <returns></returns>
         public bool CheckUserNameExisted(long id, string userName)
         {
-            userName = userName.Trim();
+            userName = userName.Trim().ToUpper();
 
             return
             this.GetObject(
-                z => z.Id != id && z.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase)) != null;
+                z => z.Id != id && z.UserName.ToUpper() == userName /*z.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase)*/) != null;
         }
 
         /// <summary>
@@ -154,7 +156,7 @@ namespace Senparc.Service
         {
             try
             {
-                var fullAccountCache = SenparcDI.GetService<FullAccountCache>();
+                var fullAccountCache = _serviceProvider.GetService<FullAccountCache>();
                 fullAccountCache.ForceLogout(_httpContextAccessor.Value.HttpContext.User.Identity.Name);
 
                 _httpContextAccessor.Value.HttpContext.SignOutAsync(
@@ -165,7 +167,7 @@ namespace Senparc.Service
             }
             catch (Exception ex)
             {
-                Log.LogUtility.Account.Error("退出登录失败。", ex);
+                Scf.Log.LogUtility.Account.Error("退出登录失败。", ex);
             }
         }
 
@@ -380,7 +382,7 @@ namespace Senparc.Service
                 var fileName = $@"/Upload/Account/headimgurl.{DateTime.Now.Ticks + Guid.NewGuid().ToString("n").Substring(0, 8)}.jpg";
 
                 //下载图片
-                DownLoadPic(userInfo.headimgurl, fileName);
+                DownLoadPic(_serviceProvider,userInfo.headimgurl, fileName);
 
                 account.PicUrl = fileName;
             }
@@ -393,11 +395,11 @@ namespace Senparc.Service
         /// </summary>
         /// <param name="picUrl"></param>
         /// <param name="fileName"></param>
-        private void DownLoadPic(string picUrl, string fileName)
+        private void DownLoadPic(IServiceProvider serviceProvider, string picUrl, string fileName)
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                Get.Download(picUrl, stream);
+                Get.Download(serviceProvider,picUrl, stream);
 
                 using (var fs = new FileStream(Server.GetWebMapPath("~" + fileName), FileMode.CreateNew))
                 {
@@ -480,7 +482,7 @@ namespace Senparc.Service
             LogUtility.WebLogger.InfoFormat("User{2}：{0}（ID：{1}）", obj.UserName, obj.Id, isInsert ? "新增" : "编辑");
 
             //清除缓存
-            var fullUserCache = SenparcDI.GetService<FullAccountCache>();
+            var fullUserCache = _serviceProvider.GetService<FullAccountCache>();
             //示范同步缓存锁
             using (fullUserCache.Cache.BeginCacheLock(FullAccountCache.CACHE_KEY, obj.Id.ToString()))
             {
@@ -495,7 +497,7 @@ namespace Senparc.Service
             LogUtility.WebLogger.Info($"User被删除：{obj.UserName}（ID：{obj.Id}）");
 
             //清除缓存
-            var fullUserCache = SenparcDI.GetService<FullAccountCache>();
+            var fullUserCache = _serviceProvider.GetService<FullAccountCache>();
             fullUserCache.RemoveObject(obj.UserName);
         }
     }

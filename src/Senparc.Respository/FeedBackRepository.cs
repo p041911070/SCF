@@ -1,12 +1,17 @@
 ﻿using Senparc.Core.Models;
+using Senparc.Scf.Repository;
 
 namespace Senparc.Repository
 {
-    public interface IFeedBackRepository : IBaseClientRepository<FeedBack>
+    public interface IFeedBackRepository : IClientRepositoryBase<FeedBack>
     {
     }
 
-    public class FeedBackRepository : BaseClientRepository<FeedBack>, IFeedBackRepository
+    public class FeedBackRepository : ClientRepositoryBase<FeedBack>, IFeedBackRepository
     {
+        public FeedBackRepository(ISqlClientFinanceData sqlClientFinanceData) : base(sqlClientFinanceData)
+        {
+
+        }
     }
 }

@@ -4,10 +4,13 @@ using System.Threading.Tasks;
 using Senparc.CO2NET;
 using Senparc.CO2NET.Extensions;
 using Senparc.Core.Models;
-using Senparc.Core.Utility;
-using Senparc.Log;
-using Senparc.Utility;
+using Senparc.Scf.Core.Models;
+using Senparc.Scf.Core.Utility;
+using Senparc.Scf.Log;
+using Senparc.Scf.Utility;
 using Senparc.Weixin.HttpUtility;
+using Senparc.Scf.Service;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Senparc.Service.OperationQueue
 {
@@ -22,7 +25,8 @@ namespace Senparc.Service.OperationQueue
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                await Get.DownloadAsync(picUrl, stream);
+                var serviceProvider = SenparcDI.GetServiceProvider();
+                await CO2NET.HttpUtility.Get.DownloadAsync(serviceProvider, picUrl, stream);
                 using (var fs = new FileStream(Server.GetMapPath("~" + fileName), FileMode.CreateNew))
                 {
                     stream.Seek(0, SeekOrigin.Begin);
@@ -37,14 +41,14 @@ namespace Senparc.Service.OperationQueue
         /// </summary>
         /// <param name="accountId"></param>
         /// <returns></returns>
-        public async Task<Account> UpdateAccountHeadImgAsync(int accountId, string headImgUrl)
+        public async Task<Account> UpdateAccountHeadImgAsync(IServiceProvider serviceProvider, int accountId, string headImgUrl)
         {
             if (headImgUrl.IsNullOrEmpty())
             {
                 throw new Exception("headImgUrl为null，accountId：" + accountId);
             }
 
-            var accountService = SenparcDI.GetService<AccountService>();
+            var accountService = serviceProvider.GetService<AccountService>();
             using (var wrap = accountService.InstanceAutoDetectChangeContextWrap())
             {
                 var account = accountService.GetObject(z => z.Id == accountId);

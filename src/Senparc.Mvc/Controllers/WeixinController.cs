@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Senparc.CO2NET.AspNet.HttpUtility;
 using Senparc.CO2NET.HttpUtility;
 using Senparc.CO2NET.Trace;
+using Senparc.CO2NET.Utilities;
 using Senparc.Core.Utility;
 using Senparc.Mvc.Weixin;
 using Senparc.Weixin.Entities;
@@ -75,7 +77,7 @@ namespace Senparc.Mvc.Controllers
             {
                 #region 记录 Request 日志
 
-                var logPath = Server.GetMapPath(string.Format("~/logs/mp/{0}/", DateTime.Now.ToString("yyyy-MM-dd")));
+                var logPath = ServerUtility.ContentRootMapPath(string.Format("~/logs/mp/{0}/", DateTime.Now.ToString("yyyy-MM-dd")));
                 if (!Directory.Exists(logPath))
                 {
                     Directory.CreateDirectory(logPath);
@@ -85,7 +87,7 @@ namespace Senparc.Mvc.Controllers
                 messageHandler.RequestDocument.Save(Path.Combine(logPath, string.Format("{0}_Request_{1}_{2}.txt", _getRandomFileName(),
                     messageHandler.RequestMessage.FromUserName,
                     messageHandler.RequestMessage.MsgType)));
-                if (messageHandler.UsingEcryptMessage)
+                if (messageHandler.UsingEncryptMessage)
                 {
                     messageHandler.EcryptRequestDocument.Save(Path.Combine(logPath, string.Format("{0}_Request_Ecrypt_{1}_{2}.txt", _getRandomFileName(),
                         messageHandler.RequestMessage.FromUserName,
@@ -112,7 +114,7 @@ namespace Senparc.Mvc.Controllers
                         messageHandler.ResponseMessage.MsgType)));
                 }
 
-                if (messageHandler.UsingEcryptMessage && messageHandler.FinalResponseDocument != null)
+                if (messageHandler.UsingEncryptMessage && messageHandler.FinalResponseDocument != null)
                 {
                     //记录加密后的响应信息
                     messageHandler.FinalResponseDocument.Save(Path.Combine(logPath, string.Format("{0}_Response_Final_{1}_{2}.txt", _getRandomFileName(),
@@ -131,7 +133,7 @@ namespace Senparc.Mvc.Controllers
                 #region 异常处理
                 SenparcTrace.Log($"MessageHandler错误：{ex.Message}");
 
-                using (TextWriter tw = new StreamWriter(Server.GetMapPath("~/App_Data/Error_" + _getRandomFileName() + ".txt")))
+                using (TextWriter tw = new StreamWriter(ServerUtility.ContentRootMapPath("~/App_Data/Error_" + _getRandomFileName() + ".txt")))
                 {
                     tw.WriteLine("ExecptionMessage:" + ex.Message);
                     tw.WriteLine(ex.Source);
